@@ -14,6 +14,14 @@
     --line:#303030; --text:#f1f1f1; --dim:#aaaaaa; --red:#ff0000; --blue:#3ea6ff;
     --radius:12px; --header-h:56px;
   }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --surface:#f2f2f2; --chip:#f0f0f0; --chip-hover:#e2e2e2;
+    --line:#e0e0e0; --text:#0f0f0f; --dim:#5f5f5f; --blue:#065fd4;
+  }
+  :root[data-theme="red"]{
+    --bg:#1a0303; --surface:#2b0808; --chip:#3a0d0d; --chip-hover:#4a1212;
+    --line:#4a1212; --text:#f5e3e3; --dim:#c98f8f; --blue:#ff6b6b;
+  }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   html,body{ cursor:none !important; }
@@ -54,6 +62,7 @@
     background:var(--bg); color:var(--text);
     font-family:Roboto,Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4;
     -webkit-font-smoothing:antialiased;
+    transition:background .2s ease, color .2s ease;
   }
   button{font-family:inherit;color:inherit;cursor:pointer}
   a{color:var(--blue);text-decoration:none}
@@ -95,13 +104,32 @@
     border-radius:18px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;
   }
   .iconbtn:hover{background:var(--chip-hover)}
+  .menubtn{width:36px;padding:0;justify-content:center;flex:0 0 36px}
   .headright{flex:0 0 auto;display:flex;align-items:center;gap:10px}
-  .profilebtn{
-    flex:0 0 auto;width:36px;height:36px;padding:0;background:var(--chip);border:2px solid transparent;
-    border-radius:50%;overflow:hidden;display:grid;place-items:center;
+
+  /* ---------- sidebar ---------- */
+  .sidebar-scrim{
+    position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .32s ease;
   }
-  .profilebtn:hover{border-color:var(--line)}
-  .profilebtn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+  .sidebar-scrim.open{opacity:1;pointer-events:auto}
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:61;width:260px;max-width:80vw;
+    background:var(--surface);padding:8px;overflow-y:auto;
+    transform:translateX(-100%);
+    transition:transform .32s cubic-bezier(.32,.08,.24,1), background .2s ease;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-header{display:flex;align-items:center;gap:12px;padding:14px 12px 18px}
+  .sidebar-header img{width:36px;height:36px;border-radius:50%;background:var(--chip);object-fit:cover;flex:0 0 36px}
+  .sidebar-header span{font-weight:500;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sidebar hr{border:0;border-top:1px solid var(--line);margin:6px 8px}
+  .sidebar-item{
+    display:flex;align-items:center;gap:16px;width:100%;padding:12px 12px;
+    background:none;border:0;border-radius:10px;color:var(--text);font-size:14.5px;text-align:left;
+  }
+  .sidebar-item:hover{background:var(--chip-hover)}
+  .sidebar-item svg{flex:0 0 22px;width:22px;height:22px}
 
   /* ---------- banner ---------- */
   .banner{
@@ -125,7 +153,7 @@
     font-size:14px;font-weight:500;white-space:nowrap;
   }
   .chip:hover{background:var(--chip-hover)}
-  .chip[aria-pressed="true"]{background:var(--text);color:#0f0f0f}
+  .chip[aria-pressed="true"]{background:var(--text);color:var(--bg)}
 
   h1.results-for{font-size:16px;font-weight:400;color:var(--dim);margin:8px 0 20px}
   h1.results-for b{color:var(--text);font-weight:500}
@@ -174,6 +202,16 @@
   .actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
   .pill{height:36px;padding:0 16px;background:var(--chip);border:0;border-radius:18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
   .pill:hover{background:var(--chip-hover)}
+  .like-btn svg{transition:fill .15s ease, stroke .15s ease}
+  .like-btn.liked{color:#ff4757}
+  .like-btn.liked svg{fill:#ff4757;stroke:#ff4757}
+  .subscribe-btn{
+    height:36px;padding:0 18px;border:0;border-radius:18px;font-size:14px;font-weight:600;
+    background:#ff0000;color:#fff;transition:background .2s ease, color .2s ease;
+  }
+  .subscribe-btn:hover{background:#cc0000}
+  .subscribe-btn.subscribed{background:var(--chip);color:var(--text)}
+  .subscribe-btn.subscribed:hover{background:var(--chip-hover)}
   .desc{background:var(--chip);border-radius:var(--radius);padding:12px;font-size:14px}
   .descstats{font-weight:500;margin-bottom:8px}
   .desctext{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -208,25 +246,33 @@
   .channelback{background:none;border:0;padding:0;color:var(--dim);font-size:14px;font-weight:500;margin-bottom:12px;display:inline-flex;align-items:center;gap:6px}
   .channelback:hover{color:var(--text)}
 
+  /* ---------- subscriptions list ---------- */
+  .sub-row{
+    display:flex;align-items:center;gap:14px;width:100%;padding:12px 8px;
+    background:none;border:0;border-bottom:1px solid var(--line);text-align:left;color:var(--text);font-size:15px;
+  }
+  .sub-row:hover{background:var(--chip)}
+  .sub-row img{width:44px;height:44px;border-radius:50%;background:var(--surface);flex:0 0 44px;object-fit:cover}
+
   /* ---------- key gate + dialog ---------- */
   .scrim{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:grid;place-items:center;padding:24px;overflow:auto}
-  .panel{width:100%;max-width:520px;background:#282828;border-radius:var(--radius);padding:24px}
+  .panel{width:100%;max-width:520px;background:var(--surface);border-radius:var(--radius);padding:24px}
   .panel h2{margin:0 0 8px;font-size:22px}
   .panel p{color:var(--dim);margin:0 0 16px}
   .panel ol{color:var(--dim);margin:0 0 16px;padding-left:20px}
   .panel li{margin-bottom:6px}
-  .panel input{width:100%;height:44px;padding:0 14px;background:#121212;border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .panel input{width:100%;height:44px;padding:0 14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace}
   .panel input:focus{outline:0;border-color:var(--blue)}
   .panel label{display:block;font-size:13px;font-weight:500;margin:16px 0 6px}
-  .panel select{height:40px;background:#121212;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit}
+  .panel select{height:40px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit}
   .panelrow{display:flex;gap:8px;justify-content:flex-end;margin-top:24px}
-  .btn-primary{height:40px;padding:0 20px;background:var(--text);color:#0f0f0f;border:0;border-radius:20px;font-weight:500;font-size:14px}
-  .btn-ghost{height:40px;padding:0 20px;background:none;border:0;border-radius:20px;font-weight:500;font-size:14px}
-  .btn-ghost:hover{background:#3f3f3f}
+  .btn-primary{height:40px;padding:0 20px;background:var(--text);color:var(--bg);border:0;border-radius:20px;font-weight:500;font-size:14px}
+  .btn-ghost{height:40px;padding:0 20px;background:none;border:0;border-radius:20px;font-weight:500;font-size:14px;color:var(--text)}
+  .btn-ghost:hover{background:var(--chip-hover)}
   .err{color:#ff8a80;font-size:13px;margin-top:10px;min-height:18px}
 
-  /* ---------- login panel ---------- */
-  .login-panel{max-width:400px;padding:32px 32px 24px}
+  /* ---------- login / settings panel ---------- */
+  .login-panel{max-width:420px;padding:32px 32px 24px}
   .loginhead{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px}
   .loginhead svg{height:28px;width:auto;margin-bottom:14px}
   .loginhead h2{margin:0 0 4px;font-size:22px}
@@ -247,6 +293,7 @@
   .howto{color:var(--dim);font-size:13px;margin:10px 0 0;padding-left:20px}
   .howto li{margin-bottom:6px}
   .login-panel select{width:100%}
+  .fieldhint{color:var(--dim);font-size:12px;margin:6px 0 0}
 
   /* ---------- profile picture picker ---------- */
   .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
@@ -259,13 +306,22 @@
   .avatar-opt.selected{border-color:var(--blue)}
   .avatar-opt.selected::after{
     content:"✓";position:absolute;right:2px;bottom:2px;width:18px;height:18px;border-radius:50%;
-    background:var(--blue);color:#0f0f0f;font-size:12px;font-weight:700;display:grid;place-items:center;
+    background:var(--blue);color:var(--bg);font-size:12px;font-weight:700;display:grid;place-items:center;
   }
   .avatar-or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12.5px;margin:18px 0 6px}
   .avatar-or::before,.avatar-or::after{content:"";flex:1;height:1px;background:var(--line)}
   .avatar-preview-row{display:flex;align-items:center;gap:12px;margin-top:10px}
   .avatar-preview{width:44px;height:44px;border-radius:50%;background:var(--surface);flex:0 0 44px;overflow:hidden}
   .avatar-preview img{width:100%;height:100%;object-fit:cover}
+
+  /* ---------- theme picker ---------- */
+  .theme-row{display:flex;gap:8px}
+  .theme-opt{
+    flex:1;height:42px;border-radius:8px;border:1px solid var(--line);background:var(--bg);
+    color:var(--text);font-size:13px;font-weight:500;
+  }
+  .theme-opt:hover{background:var(--chip-hover)}
+  .theme-opt.active{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
 
   @media (max-width:1015px){
     .watch{grid-template-columns:minmax(0,1fr)}
@@ -290,7 +346,31 @@
 
 <div id="custom-cursor" aria-hidden="true"><div class="cc-ring"></div><div class="cc-dot"></div></div>
 
+<div class="sidebar-scrim" id="sidebar-scrim"></div>
+<nav class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <img id="sidebar-avatar" alt="">
+    <span id="sidebar-username">Guest</span>
+  </div>
+  <hr>
+  <button class="sidebar-item" id="nav-settings" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    Settings
+  </button>
+  <button class="sidebar-item" id="nav-liked" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7.5-4.9-10-9.5C.5 7.8 2.7 4 6.5 4 9 4 11 5.6 12 7c1-1.4 3-3 5.5-3 3.8 0 6 3.8 4.5 7.5C19.5 16.1 12 21 12 21z"/></svg>
+    Liked videos
+  </button>
+  <button class="sidebar-item" id="nav-subs" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Subscribed
+  </button>
+</nav>
+
 <header>
+  <button class="iconbtn menubtn" id="menu-btn" aria-label="Menu" title="Menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
   <button class="logo" id="home-btn" title="TubeYou Home">
     <svg viewBox="0 0 28 20" aria-hidden="true"><path fill="#ff0000" d="M27.4 3.1s-.3-1.9-1.1-2.7C25.3-.6 24.2-.6 23.7-.7 20.1-1 14.7-1 14.7-1h-.1S9.2-1 5.6-.7C5.1-.6 4-.6 3-.4 2.2.4 1.9 2.3 1.9 2.3S1.6 4.5 1.6 6.7v2.1c0 2.2.3 4.4.3 4.4s.3 1.9 1.1 2.7c1 1 2.3 1 2.9 1.1 2.1.2 8.8.3 8.8.3s5.4 0 9-.3c.5-.1 1.6-.1 2.6-1.1.8-.8 1.1-2.7 1.1-2.7s.3-2.2.3-4.4V6.7c0-2.2-.3-4.4-.3-4.4z" transform="translate(0 1)"/><path fill="#fff" d="M11.2 13.4V5.9l7 3.8-7 3.7z"/></svg>
     <span>TubeYou</span>
@@ -308,10 +388,7 @@
   <div class="headright">
     <button class="iconbtn" id="settings-btn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      <span>API key</span>
-    </button>
-    <button class="profilebtn" id="profile-btn" title="Choose profile picture">
-      <img id="profile-img" alt="Your profile picture" width="36" height="36">
+      <span>Settings</span>
     </button>
   </div>
 </header>
@@ -348,8 +425,12 @@
               <p class="ownersubs" id="v-subs"></p>
             </div>
           </button>
+          <button class="subscribe-btn hidden" id="v-subscribe-btn" type="button">Subscribe</button>
           <div class="actions">
-            <span class="pill" id="v-likes"></span>
+            <button class="pill like-btn" id="v-like-btn" type="button" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7.5-4.9-10-9.5C.5 7.8 2.7 4 6.5 4 9 4 11 5.6 12 7c1-1.4 3-3 5.5-3 3.8 0 6 3.8 4.5 7.5C19.5 16.1 12 21 12 21z"/></svg>
+              <span id="v-like-count"></span>
+            </button>
             <a class="pill" id="v-open" target="_blank" rel="noopener">Open on YouTube</a>
           </div>
         </div>
@@ -378,15 +459,37 @@
     <div id="channel-status"></div>
     <button class="loadmore hidden" id="channel-load-more">Show more</button>
   </section>
+
+  <!-- liked videos view -->
+  <section id="view-liked" class="hidden">
+    <button class="channelback" id="liked-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      Back
+    </button>
+    <h1 class="results-for" style="margin:8px 0 20px">Liked videos</h1>
+    <div class="grid" id="liked-grid"></div>
+    <div id="liked-status"></div>
+  </section>
+
+  <!-- subscriptions view -->
+  <section id="view-subscribed" class="hidden">
+    <button class="channelback" id="subs-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      Back
+    </button>
+    <h1 class="results-for" style="margin:8px 0 20px">Subscriptions</h1>
+    <div id="subs-list"></div>
+    <div id="subs-status"></div>
+  </section>
 </main>
 
-<!-- settings / key dialog -->
+<!-- account / settings dialog -->
 <div class="scrim hidden" id="gate">
   <div class="panel login-panel" role="dialog" aria-modal="true" aria-labelledby="gate-title">
     <div class="loginhead">
       <svg viewBox="0 0 28 20" aria-hidden="true"><path fill="#ff0000" d="M27.4 3.1s-.3-1.9-1.1-2.7C25.3-.6 24.2-.6 23.7-.7 20.1-1 14.7-1 14.7-1h-.1S9.2-1 5.6-.7C5.1-.6 4-.6 3-.4 2.2.4 1.9 2.3 1.9 2.3S1.6 4.5 1.6 6.7v2.1c0 2.2.3 4.4.3 4.4s.3 1.9 1.1 2.7c1 1 2.3 1 2.9 1.1 2.1.2 8.8.3 8.8.3s5.4 0 9-.3c.5-.1 1.6-.1 2.6-1.1.8-.8 1.1-2.7 1.1-2.7s.3-2.2.3-4.4V6.7c0-2.2-.3-4.4-.3-4.4z" transform="translate(0 1)"/><path fill="#fff" d="M11.2 13.4V5.9l7 3.8-7 3.7z"/></svg>
       <h2 id="gate-title">Sign in</h2>
-      <p>to continue to TubeYou</p>
+      <p id="gate-subtitle">to continue to TubeYou</p>
     </div>
 
     <label for="username-input">Username</label>
@@ -409,6 +512,16 @@
       <li>Paste it into the password field above.</li>
     </ol>
 
+    <label for="avatar-url-input">Profile picture</label>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <div class="avatar-or">or use your own</div>
+    <input id="avatar-url-input" type="url" placeholder="https://example.com/picture.jpg" spellcheck="false" autocomplete="off">
+    <div class="avatar-preview-row" id="avatar-preview-row" style="display:none">
+      <div class="avatar-preview"><img id="avatar-preview-img" alt=""></div>
+      <span style="color:var(--dim);font-size:13px">Preview</span>
+    </div>
+    <p class="fieldhint">Applies immediately.</p>
+
     <label for="region-input">Home feed country</label>
     <select id="region-input">
       <option value="SE">Sweden</option>
@@ -430,6 +543,15 @@
       <option value="AU">Australia</option>
       <option value="CA">Canada</option>
     </select>
+
+    <label>Theme</label>
+    <div class="theme-row" id="theme-row">
+      <button class="theme-opt" type="button" data-theme="dark">Dark</button>
+      <button class="theme-opt" type="button" data-theme="light">Light</button>
+      <button class="theme-opt" type="button" data-theme="red">Red</button>
+    </div>
+    <p class="fieldhint">Applies immediately.</p>
+
     <div class="err" id="gate-err"></div>
     <div class="panelrow">
       <button class="btn-ghost hidden" id="gate-clear">Sign out</button>
@@ -439,35 +561,14 @@
   </div>
 </div>
 
-<!-- profile picture picker -->
-<div class="scrim hidden" id="profile-gate">
-  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-    <h2 id="profile-title">Choose your profile picture</h2>
-    <p>Pick one of these, or paste a custom image URL below.</p>
-    <div class="avatar-grid" id="avatar-grid"></div>
-
-    <div class="avatar-or">or use your own</div>
-    <label for="avatar-url-input">Custom image URL</label>
-    <input id="avatar-url-input" type="url" placeholder="https://example.com/picture.jpg" spellcheck="false" autocomplete="off">
-    <div class="avatar-preview-row" id="avatar-preview-row" style="display:none">
-      <div class="avatar-preview"><img id="avatar-preview-img" alt=""></div>
-      <span style="color:var(--dim);font-size:13px">Preview</span>
-    </div>
-
-    <div class="err" id="profile-err"></div>
-    <div class="panelrow">
-      <button class="btn-ghost" id="profile-cancel">Cancel</button>
-      <button class="btn-primary" id="profile-save">Save</button>
-    </div>
-  </div>
-</div>
-
 <script>
 (function () {
   "use strict";
 
   var API = "https://www.googleapis.com/youtube/v3/";
-  var LS_KEY = "yt.apiKey", LS_REGION = "yt.region", LS_AVATAR = "yt.profileAvatar";
+  var LS_KEY = "yt.apiKey", LS_REGION = "yt.region", LS_AVATAR = "yt.profileAvatar",
+      LS_USERNAME = "yt.username", LS_THEME = "yt.theme",
+      LS_LIKED = "yt.likedVideos", LS_SUBS = "yt.subscriptions";
 
   var AVATARS = [
     "https://i.imgur.com/UalCeYm.png",
@@ -484,6 +585,8 @@
     key: "",
     region: "SE",
     avatar: AVATARS[0],
+    username: "",
+    theme: "dark",
     mode: "home",      // home | search
     query: "",
     category: "0",
@@ -501,6 +604,17 @@
   function show(node, yes) { node.classList.toggle("hidden", !yes); }
   function store(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
   function read(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+
+  function getListStore(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+  function setListStore(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
 
   function compact(n) {
     n = Number(n);
@@ -807,10 +921,15 @@
     show($("view-browse"), name === "browse");
     show($("view-watch"), name === "watch");
     show($("view-channel"), name === "channel");
+    show($("view-liked"), name === "liked");
+    show($("view-subscribed"), name === "subscribed");
   }
+
+  var currentVideoId = null;
 
   function openVideo(id) {
     if (!id) return;
+    currentVideoId = id;
     showView("watch");
     window.scrollTo(0, 0);
 
@@ -832,7 +951,11 @@
     $("v-subs").textContent = "";
     $("v-stats").textContent = "";
     $("v-desc").textContent = "";
-    $("v-likes").textContent = "";
+    $("v-like-count").textContent = "";
+    $("v-like-btn").classList.remove("liked");
+    $("v-like-btn").setAttribute("aria-pressed", "false");
+    $("v-like-btn").onclick = null;
+    show($("v-subscribe-btn"), false);
     $("v-avatar").removeAttribute("src");
     $("comments").textContent = "";
     $("related").textContent = "";
@@ -847,6 +970,16 @@
         if (!v) throw new Error("That video is unavailable.");
         state.video = v;
         renderVideo(v);
+        wireLikeButton($("v-like-btn"), v.id, {
+          id: v.id,
+          title: v.snippet.title,
+          channelId: v.snippet.channelId,
+          channelTitle: v.snippet.channelTitle,
+          thumbnail: thumbOf(v.snippet),
+          duration: v.contentDetails && v.contentDetails.duration,
+          publishedAt: v.snippet.publishedAt,
+          viewCount: v.statistics && v.statistics.viewCount
+        });
         loadComments(id);
         return loadChannel(v.snippet.channelId);
       })
@@ -861,7 +994,7 @@
     $("v-title").textContent = sn.title;
     $("v-channel").textContent = sn.channelTitle;
     $("v-owner-btn").onclick = function () { openChannel(sn.channelId); };
-    $("v-likes").textContent = (st.likeCount ? compact(st.likeCount) : "—") + " likes";
+    $("v-like-count").textContent = (st.likeCount ? compact(st.likeCount) : "—") + " likes";
     $("v-stats").textContent = (st.viewCount ? full(st.viewCount) + " views" : "Views hidden") + "  •  " + dateLong(sn.publishedAt);
     $("v-desc").innerHTML = linkify(sn.description || "No description.");
 
@@ -913,6 +1046,15 @@
         var subs = c.statistics && c.statistics.subscriberCount;
         $("v-subs").textContent = subs ? compact(subs) + " subscribers" : "";
         var uploads = c.contentDetails && c.contentDetails.relatedPlaylists && c.contentDetails.relatedPlaylists.uploads;
+
+        var subBtn = $("v-subscribe-btn");
+        show(subBtn, true);
+        wireSubscribeButton(subBtn, c.id, {
+          id: c.id,
+          title: c.snippet.title,
+          thumbnail: (c.snippet.thumbnails.default || {}).url || ""
+        });
+
         if (uploads) loadMoreFromChannel(uploads);
       })
       .catch(function () {});
@@ -1004,6 +1146,55 @@
       });
   }
 
+  /* ---------------- likes ---------------- */
+  function isLiked(videoId) {
+    return getListStore(LS_LIKED).some(function (s) { return s.id === videoId; });
+  }
+  function setLiked(videoId, snapshot, liked) {
+    var list = getListStore(LS_LIKED).filter(function (s) { return s.id !== videoId; });
+    if (liked) {
+      snapshot.likedAt = Date.now();
+      list.unshift(snapshot);
+    }
+    setListStore(LS_LIKED, list);
+  }
+  function wireLikeButton(btn, videoId, snapshot) {
+    function render() {
+      var liked = isLiked(videoId);
+      btn.classList.toggle("liked", liked);
+      btn.setAttribute("aria-pressed", String(liked));
+    }
+    render();
+    btn.onclick = function () {
+      var liked = isLiked(videoId);
+      setLiked(videoId, snapshot, !liked);
+      render();
+    };
+  }
+
+  /* ---------------- subscriptions ---------------- */
+  function isSubscribed(channelId) {
+    return getListStore(LS_SUBS).some(function (s) { return s.id === channelId; });
+  }
+  function setSubscribed(channelId, snapshot, subscribed) {
+    var list = getListStore(LS_SUBS).filter(function (s) { return s.id !== channelId; });
+    if (subscribed) list.unshift(snapshot);
+    setListStore(LS_SUBS, list);
+  }
+  function wireSubscribeButton(btn, channelId, snapshot) {
+    function render() {
+      var subbed = isSubscribed(channelId);
+      btn.textContent = subbed ? "Subscribed" : "Subscribe";
+      btn.classList.toggle("subscribed", subbed);
+    }
+    render();
+    btn.onclick = function () {
+      var subbed = isSubscribed(channelId);
+      setSubscribed(channelId, snapshot, !subbed);
+      render();
+    };
+  }
+
   /* ---------------- channel page ---------------- */
   function openChannel(channelId) {
     if (!channelId) return;
@@ -1044,6 +1235,8 @@
     head.appendChild(img);
 
     var box = el("div");
+    box.style.flex = "1 1 auto";
+    box.style.minWidth = "0";
     var h1 = el("h1");
     h1.textContent = sn.title;
     box.appendChild(h1);
@@ -1056,6 +1249,16 @@
     box.appendChild(p);
 
     head.appendChild(box);
+
+    var subBtn = el("button", "subscribe-btn");
+    subBtn.type = "button";
+    subBtn.style.marginLeft = "auto";
+    wireSubscribeButton(subBtn, c.id, {
+      id: c.id,
+      title: sn.title,
+      thumbnail: (sn.thumbnails.high || sn.thumbnails.medium || sn.thumbnails.default || {}).url || ""
+    });
+    head.appendChild(subBtn);
   }
 
   function loadChannelVideos(fresh) {
@@ -1094,9 +1297,102 @@
       .then(function () { ch.loading = false; });
   }
 
+  /* ---------------- liked videos page ---------------- */
+  function renderLiked() {
+    document.title = "Liked videos - TubeYou";
+    window.scrollTo(0, 0);
+    var grid = $("liked-grid");
+    grid.textContent = "";
+    var items = getListStore(LS_LIKED);
+    if (!items.length) {
+      status($("liked-status"), "empty", "No liked videos yet — tap the heart next to a video's like count to save it here.");
+      return;
+    }
+    $("liked-status").textContent = "";
+    var vids = items.map(function (entry) {
+      return {
+        id: entry.id,
+        snippet: {
+          title: entry.title,
+          channelId: entry.channelId,
+          channelTitle: entry.channelTitle,
+          thumbnails: { medium: { url: entry.thumbnail } },
+          publishedAt: entry.publishedAt
+        },
+        statistics: { viewCount: entry.viewCount },
+        contentDetails: { duration: entry.duration }
+      };
+    });
+    loadChannels(vids.map(function (v) { return v.snippet.channelId; }))
+      .then(function () {
+        vids.forEach(function (v) { grid.appendChild(buildCard(v, false)); });
+      });
+  }
+
+  /* ---------------- subscriptions page ---------------- */
+  function renderSubscribed() {
+    document.title = "Subscriptions - TubeYou";
+    window.scrollTo(0, 0);
+    var list = $("subs-list");
+    list.textContent = "";
+    var items = getListStore(LS_SUBS);
+    if (!items.length) {
+      status($("subs-status"), "empty", "You haven't subscribed to any channels yet.");
+      return;
+    }
+    $("subs-status").textContent = "";
+    items.forEach(function (entry) {
+      var row = el("button", "sub-row");
+      row.type = "button";
+      var img = el("img");
+      img.loading = "lazy"; img.alt = ""; img.src = entry.thumbnail;
+      var name = el("span");
+      name.textContent = entry.title;
+      row.appendChild(img);
+      row.appendChild(name);
+      row.addEventListener("click", function () { openChannel(entry.id); });
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------------- sidebar ---------------- */
+  function openSidebar() {
+    $("sidebar").classList.add("open");
+    $("sidebar-scrim").classList.add("open");
+    $("sidebar").setAttribute("aria-hidden", "false");
+  }
+  function closeSidebar() {
+    $("sidebar").classList.remove("open");
+    $("sidebar-scrim").classList.remove("open");
+    $("sidebar").setAttribute("aria-hidden", "true");
+  }
+  function toggleSidebar() {
+    if ($("sidebar").classList.contains("open")) closeSidebar();
+    else openSidebar();
+  }
+  function updateSidebarIdentity() {
+    $("sidebar-avatar").src = state.avatar;
+    $("sidebar-username").textContent = state.username || "Guest";
+  }
+
+  /* ---------------- theme ---------------- */
+  function applyTheme(theme) {
+    state.theme = theme;
+    document.documentElement.setAttribute("data-theme", theme);
+    store(LS_THEME, theme);
+    updateThemeButtons(theme);
+  }
+  function updateThemeButtons(theme) {
+    Array.prototype.forEach.call(document.querySelectorAll(".theme-opt"), function (b) {
+      b.classList.toggle("active", b.dataset.theme === theme);
+    });
+  }
+
   /* ---------------- profile picture picker ---------------- */
-  function applyAvatar() {
-    $("profile-img").src = state.avatar;
+  function applyAvatar(url) {
+    state.avatar = url;
+    store(LS_AVATAR, url);
+    updateSidebarIdentity();
   }
 
   function renderAvatarGrid(selectedUrl) {
@@ -1119,31 +1415,10 @@
           n.classList.remove("selected");
         });
         b.classList.add("selected");
+        applyAvatar(url);
       });
       grid.appendChild(b);
     });
-  }
-
-  function openProfileGate() {
-    var isPreset = AVATARS.indexOf(state.avatar) !== -1;
-    renderAvatarGrid(isPreset ? state.avatar : "");
-    $("avatar-url-input").value = isPreset ? "" : state.avatar;
-    show($("avatar-preview-row"), !isPreset);
-    if (!isPreset) $("avatar-preview-img").src = state.avatar;
-    $("profile-err").textContent = "";
-    show($("profile-gate"), true);
-  }
-
-  function closeProfileGate() { show($("profile-gate"), false); }
-
-  function saveAvatar() {
-    var custom = $("avatar-url-input").value.trim();
-    var chosen = custom || $("avatar-grid").dataset.selected;
-    if (!chosen) { $("profile-err").textContent = "Pick a picture above or paste an image URL."; return; }
-    state.avatar = chosen;
-    store(LS_AVATAR, chosen);
-    applyAvatar();
-    closeProfileGate();
   }
 
   var avatarUrlTimer = null;
@@ -1158,17 +1433,36 @@
     avatarUrlTimer = setTimeout(function () {
       $("avatar-preview-img").src = url;
       show($("avatar-preview-row"), true);
-    }, 200);
+      applyAvatar(url);
+    }, 350);
   });
 
-  /* ---------------- key dialog ---------------- */
+  $("username-input").addEventListener("input", function () {
+    state.username = this.value;
+    store(LS_USERNAME, state.username);
+    updateSidebarIdentity();
+  });
+
+  /* ---------------- account / settings dialog ---------------- */
   function openGate(firstRun) {
-    $("username-input").value = $("username-input").value || "";
+    $("username-input").value = state.username;
     $("key-input").value = state.key;
     $("region-input").value = state.region;
     $("gate-err").textContent = "";
+    $("gate-title").textContent = firstRun ? "Sign in" : "Settings";
+    $("gate-subtitle").textContent = firstRun ? "to continue to TubeYou" : "Manage your TubeYou account";
+    $("gate-save").textContent = firstRun ? "Sign in" : "Save changes";
     show($("gate-cancel"), !firstRun && !!state.key);
     show($("gate-clear"), !!state.key);
+
+    var isPreset = AVATARS.indexOf(state.avatar) !== -1;
+    renderAvatarGrid(isPreset ? state.avatar : "");
+    $("avatar-url-input").value = isPreset ? "" : state.avatar;
+    show($("avatar-preview-row"), !isPreset);
+    if (!isPreset) $("avatar-preview-img").src = state.avatar;
+
+    updateThemeButtons(state.theme);
+
     show($("gate"), true);
     $("username-input").focus();
   }
@@ -1182,11 +1476,12 @@
     $("pw-toggle").setAttribute("aria-label", showing ? "Show password" : "Hide password");
   }
 
-  function saveKey() {
+  function saveAccount() {
     var k = $("key-input").value.trim();
     if (!k) { $("gate-err").textContent = "Enter your API key as the password first."; return; }
     var region = $("region-input").value;
     var btn = $("gate-save");
+    var wasFirstRun = !state.key;
     btn.disabled = true;
     btn.textContent = "Signing in…";
     $("gate-err").textContent = "";
@@ -1209,7 +1504,7 @@
       })
       .then(function () {
         btn.disabled = false;
-        btn.textContent = "Sign in";
+        btn.textContent = wasFirstRun ? "Sign in" : "Save changes";
       });
   }
 
@@ -1220,12 +1515,19 @@
     if (q) doSearch(q);
   });
   $("home-btn").addEventListener("click", goHome);
+  $("menu-btn").addEventListener("click", toggleSidebar);
+  $("sidebar-scrim").addEventListener("click", closeSidebar);
+  $("nav-settings").addEventListener("click", function () { closeSidebar(); openGate(false); });
+  $("nav-liked").addEventListener("click", function () { closeSidebar(); showView("liked"); renderLiked(); });
+  $("nav-subs").addEventListener("click", function () { closeSidebar(); showView("subscribed"); renderSubscribed(); });
+  $("liked-back").addEventListener("click", goHome);
+  $("subs-back").addEventListener("click", goHome);
   $("settings-btn").addEventListener("click", function () { openGate(false); });
   $("load-more").addEventListener("click", function () { loadBrowse(false); });
   $("channel-back").addEventListener("click", goHome);
   $("channel-load-more").addEventListener("click", function () { loadChannelVideos(false); });
   $("desc-toggle").addEventListener("click", function (e) { e.stopPropagation(); toggleDesc(); });
-  $("gate-save").addEventListener("click", saveKey);
+  $("gate-save").addEventListener("click", saveAccount);
   $("gate-cancel").addEventListener("click", closeGate);
   $("pw-toggle").addEventListener("click", togglePasswordVisibility);
   $("how-toggle").addEventListener("click", function () {
@@ -1242,13 +1544,14 @@
     show($("gate-clear"), false);
     show($("gate-cancel"), false);
   });
-  $("key-input").addEventListener("keydown", function (e) { if (e.key === "Enter") saveKey(); });
-  $("profile-btn").addEventListener("click", openProfileGate);
-  $("profile-cancel").addEventListener("click", closeProfileGate);
-  $("profile-save").addEventListener("click", saveAvatar);
+  $("key-input").addEventListener("keydown", function (e) { if (e.key === "Enter") saveAccount(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".theme-opt"), function (b) {
+    b.addEventListener("click", function () { applyTheme(b.dataset.theme); });
+  });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && !$("gate").classList.contains("hidden") && state.key) closeGate();
-    if (e.key === "Escape" && !$("profile-gate").classList.contains("hidden")) closeProfileGate();
+    if (e.key !== "Escape") return;
+    if ($("sidebar").classList.contains("open")) { closeSidebar(); return; }
+    if (!$("gate").classList.contains("hidden") && state.key) closeGate();
   });
   document.addEventListener("click", function (e) {
     if (e.target.classList && e.target.classList.contains("ts")) seek(+e.target.dataset.sec);
@@ -1265,7 +1568,7 @@
 
     var HOVER_SELECTOR = "a, button, select, .card, .sidecard, .chip, .pill, .avatar, " +
       ".cardsub.channel, .logo, .iconbtn, .loadmore, .desctoggle, .ts, .channelback, .owner, .banner button, " +
-      ".profilebtn, .avatar-opt, .cavatar, .cauthorname";
+      ".avatar-opt, .cavatar, .cauthorname, .sidebar-item, .theme-opt, .subscribe-btn, .like-btn, .sub-row";
 
     window.addEventListener("mousemove", function (e) {
       cursor.classList.add("ready");
@@ -1290,7 +1593,11 @@
   state.key = read(LS_KEY);
   state.region = read(LS_REGION) || "SE";
   state.avatar = read(LS_AVATAR) || AVATARS[0];
-  applyAvatar();
+  state.username = read(LS_USERNAME);
+  state.theme = read(LS_THEME) || "dark";
+
+  applyTheme(state.theme);
+  updateSidebarIdentity();
   renderChips();
   if (state.key) goHome();
   else openGate(true);
