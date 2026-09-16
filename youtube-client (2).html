@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f0f; --surface:#212121; --chip:#272727; --chip-hover:#3f3f3f;
+    --line:#303030; --text:#f1f1f1; --dim:#aaaaaa; --red:#ff0000; --blue:#3ea6ff;
+    --radius:12px; --header-h:56px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:Roboto,Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  img{display:block;max-width:100%}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+  ::-webkit-scrollbar{width:12px;height:12px}
+  ::-webkit-scrollbar-thumb{background:#5a5a5a;border:3px solid var(--bg);border-radius:8px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:40;height:var(--header-h);
+    display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);
+  }
+  .logo{display:flex;align-items:center;gap:5px;background:none;border:0;padding:0;flex:0 0 auto}
+  .logo svg{height:20px;width:auto}
+  .logo span{font-weight:700;font-size:20px;letter-spacing:-1.2px}
+  .searchwrap{flex:1 1 auto;display:flex;justify-content:center;min-width:0}
+  form.search{display:flex;width:100%;max-width:640px}
+  form.search input{
+    flex:1 1 auto;min-width:0;height:40px;padding:0 16px;
+    background:#121212;border:1px solid var(--line);border-right:0;
+    border-radius:20px 0 0 20px;color:var(--text);font-size:16px;
+  }
+  form.search input::placeholder{color:#888}
+  form.search input:focus{outline:0;border-color:#1c62b9;box-shadow:inset 0 0 0 1px #1c62b9}
+  form.search button{
+    flex:0 0 64px;height:40px;background:var(--chip);border:1px solid var(--line);
+    border-radius:0 20px 20px 0;display:grid;place-items:center;
+  }
+  form.search button:hover{background:var(--chip-hover)}
+  .iconbtn{
+    flex:0 0 auto;height:36px;padding:0 12px;background:var(--chip);border:1px solid transparent;
+    border-radius:18px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;
+  }
+  .iconbtn:hover{background:var(--chip-hover)}
+
+  /* ---------- banner ---------- */
+  .banner{
+    position:relative;margin:8px 24px 0;padding:14px 44px 14px 16px;
+    background:#3a2a00;border:1px solid #6b4e00;border-radius:8px;
+    font-size:14px;line-height:1.6;color:#ffe0a3;
+  }
+  .banner strong{color:#fff5e0;display:block;margin-bottom:2px}
+  .banner code{background:rgba(0,0,0,.45);padding:2px 6px;border-radius:4px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap}
+  .banner button{position:absolute;top:8px;right:10px;background:none;border:0;font-size:22px;line-height:1;color:#ffe0a3;padding:2px 6px}
+  @media (max-width:656px){.banner{margin:8px 12px 0}.banner code{white-space:normal}}
+
+  /* ---------- layout ---------- */
+  main{padding:8px 24px 64px}
+  .hidden{display:none !important}
+
+  .chips{display:flex;gap:12px;overflow-x:auto;padding:12px 0 16px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;height:32px;padding:0 12px;background:var(--chip);border:0;border-radius:8px;
+    font-size:14px;font-weight:500;white-space:nowrap;
+  }
+  .chip:hover{background:var(--chip-hover)}
+  .chip[aria-pressed="true"]{background:var(--text);color:#0f0f0f}
+
+  h1.results-for{font-size:16px;font-weight:400;color:var(--dim);margin:8px 0 20px}
+  h1.results-for b{color:var(--text);font-weight:500}
+
+  .grid{
+    display:grid;gap:40px 16px;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  }
+
+  /* ---------- video card ---------- */
+  .card{display:flex;flex-direction:column;gap:12px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+  .thumb{position:relative;aspect-ratio:16/9;background:var(--surface);border-radius:var(--radius);overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .dur{
+    position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.8);
+    padding:1px 4px;border-radius:4px;font-size:12px;font-weight:500;letter-spacing:.2px;
+  }
+  .cardmeta{display:flex;gap:12px}
+  .avatar{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:var(--surface)}
+  .cardtext{min-width:0}
+  .cardtitle{
+    font-size:16px;font-weight:500;line-height:1.35;margin:0 0 4px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .cardsub{color:var(--dim);font-size:14px;margin:0}
+  .cardsub.channel:hover{color:var(--text)}
+
+  .center{display:grid;place-items:center;padding:80px 16px;text-align:center;color:var(--dim)}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
+  .loadmore{margin:40px auto 0;display:block;height:36px;padding:0 16px;background:none;border:1px solid var(--line);border-radius:18px;font-weight:500}
+  .loadmore:hover{background:var(--chip)}
+
+  /* ---------- watch ---------- */
+  .watch{display:grid;grid-template-columns:minmax(0,1fr) 402px;gap:24px;max-width:1754px;margin:0 auto;padding-top:16px}
+  .player{aspect-ratio:16/9;width:100%;background:#000;border-radius:var(--radius);overflow:hidden}
+  .player iframe{width:100%;height:100%;border:0}
+  h1.vtitle{font-size:20px;font-weight:700;line-height:1.3;margin:12px 0 0}
+  .ownerrow{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:12px 0}
+  .owner{display:flex;align-items:center;gap:12px;min-width:0}
+  .owner img{width:40px;height:40px;border-radius:50%;background:var(--surface)}
+  .ownername{font-size:16px;font-weight:500;margin:0}
+  .ownersubs{font-size:12px;color:var(--dim);margin:0}
+  .actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+  .pill{height:36px;padding:0 16px;background:var(--chip);border:0;border-radius:18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+  .pill:hover{background:var(--chip-hover)}
+  .desc{background:var(--chip);border-radius:var(--radius);padding:12px;font-size:14px}
+  .descstats{font-weight:500;margin-bottom:8px}
+  .desctext{white-space:pre-wrap;overflow-wrap:anywhere}
+  .desc.collapsed .desctext{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .desctoggle{margin-top:8px;background:none;border:0;padding:0;font-weight:500;font-size:14px}
+  .ts{color:var(--blue);cursor:pointer}
+  .ts:hover{text-decoration:underline}
+
+  h2.sec{font-size:20px;font-weight:700;margin:24px 0 16px}
+  .comment{display:flex;gap:16px;margin-bottom:16px}
+  .comment img{width:40px;height:40px;border-radius:50%;flex:0 0 40px;background:var(--surface)}
+  .cauthor{font-size:13px;font-weight:500;margin:0}
+  .cauthor time{color:var(--dim);font-weight:400;margin-left:6px}
+  .ctext{margin:2px 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .clikes{font-size:12px;color:var(--dim)}
+
+  .sidecard{display:flex;gap:8px;margin-bottom:8px;cursor:pointer;background:none;border:0;padding:0;text-align:left;width:100%}
+  .sidecard .thumb{flex:0 0 168px;width:168px;border-radius:8px}
+  .sidecard .cardtitle{font-size:14px;margin-bottom:2px}
+  .sidecard .cardsub{font-size:12px}
+
+  /* ---------- key gate + dialog ---------- */
+  .scrim{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:grid;place-items:center;padding:24px;overflow:auto}
+  .panel{width:100%;max-width:520px;background:#282828;border-radius:var(--radius);padding:24px}
+  .panel h2{margin:0 0 8px;font-size:22px}
+  .panel p{color:var(--dim);margin:0 0 16px}
+  .panel ol{color:var(--dim);margin:0 0 16px;padding-left:20px}
+  .panel li{margin-bottom:6px}
+  .panel input{width:100%;height:44px;padding:0 14px;background:#121212;border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .panel input:focus{outline:0;border-color:var(--blue)}
+  .panel label{display:block;font-size:13px;font-weight:500;margin:16px 0 6px}
+  .panel select{height:40px;background:#121212;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit}
+  .panelrow{display:flex;gap:8px;justify-content:flex-end;margin-top:24px}
+  .btn-primary{height:40px;padding:0 20px;background:var(--text);color:#0f0f0f;border:0;border-radius:20px;font-weight:500;font-size:14px}
+  .btn-ghost{height:40px;padding:0 20px;background:none;border:0;border-radius:20px;font-weight:500;font-size:14px}
+  .btn-ghost:hover{background:#3f3f3f}
+  .err{color:#ff8a80;font-size:13px;margin-top:10px;min-height:18px}
+
+  @media (max-width:1015px){
+    .watch{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:656px){
+    main{padding:8px 12px 48px}
+    header{gap:8px;padding:0 8px}
+    .logo span{display:none}
+    .grid{grid-template-columns:1fr;gap:24px}
+    .watch{padding-top:0}
+    .player{border-radius:0;margin:0 -12px;width:calc(100% + 24px)}
+    .sidecard{flex-direction:column}
+    .sidecard .thumb{flex:none;width:100%}
+    .sidecard .cardtitle{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="logo" id="home-btn" title="YouTube Home">
+    <svg viewBox="0 0 28 20" aria-hidden="true"><path fill="#ff0000" d="M27.4 3.1s-.3-1.9-1.1-2.7C25.3-.6 24.2-.6 23.7-.7 20.1-1 14.7-1 14.7-1h-.1S9.2-1 5.6-.7C5.1-.6 4-.6 3-.4 2.2.4 1.9 2.3 1.9 2.3S1.6 4.5 1.6 6.7v2.1c0 2.2.3 4.4.3 4.4s.3 1.9 1.1 2.7c1 1 2.3 1 2.9 1.1 2.1.2 8.8.3 8.8.3s5.4 0 9-.3c.5-.1 1.6-.1 2.6-1.1.8-.8 1.1-2.7 1.1-2.7s.3-2.2.3-4.4V6.7c0-2.2-.3-4.4-.3-4.4z" transform="translate(0 1)"/><path fill="#fff" d="M11.2 13.4V5.9l7 3.8-7 3.7z"/></svg>
+    <span>YouTube</span>
+  </button>
+
+  <div class="searchwrap">
+    <form class="search" id="search-form" role="search">
+      <input id="q" type="search" placeholder="Search" autocomplete="off" aria-label="Search videos">
+      <button type="submit" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <button class="iconbtn" id="settings-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    <span>API key</span>
+  </button>
+</header>
+
+<div class="banner hidden" id="file-warning">
+  <strong>If videos don't play from this file, host it instead.</strong>
+  Some videos still block playback with no referrer, which shows as error 153. The safe fix is a real URL — try
+  <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">Netlify Drop</a> and drag this file onto it, no account needed.
+  Search and descriptions work either way.
+  <button id="banner-close" aria-label="Dismiss">&times;</button>
+</div>
+
+<main>
+  <!-- browse view -->
+  <section id="view-browse">
+    <div class="chips" id="chips"></div>
+    <h1 class="results-for hidden" id="results-for"></h1>
+    <div class="grid" id="grid"></div>
+    <div id="browse-status"></div>
+    <button class="loadmore hidden" id="load-more">Show more</button>
+  </section>
+
+  <!-- watch view -->
+  <section id="view-watch" class="hidden">
+    <div class="watch">
+      <div>
+        <div class="player" id="player"></div>
+        <h1 class="vtitle" id="v-title"></h1>
+        <div class="ownerrow">
+          <div class="owner">
+            <img id="v-avatar" alt="" width="40" height="40">
+            <div>
+              <p class="ownername" id="v-channel"></p>
+              <p class="ownersubs" id="v-subs"></p>
+            </div>
+          </div>
+          <div class="actions">
+            <span class="pill" id="v-likes"></span>
+            <a class="pill" id="v-open" target="_blank" rel="noopener">Open on YouTube</a>
+          </div>
+        </div>
+        <div class="desc collapsed" id="desc">
+          <div class="descstats" id="v-stats"></div>
+          <div class="desctext" id="v-desc"></div>
+          <button class="desctoggle" id="desc-toggle">Show more</button>
+        </div>
+        <h2 class="sec" id="comments-head">Comments</h2>
+        <div id="comments"></div>
+      </div>
+      <aside>
+        <div id="related"></div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- settings / key dialog -->
+<div class="scrim hidden" id="gate">
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <h2 id="gate-title">Add your YouTube Data API key</h2>
+    <p>The key stays in this browser only. It is never sent anywhere except to Google.</p>
+    <ol>
+      <li>Open <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">YouTube Data API v3</a> and turn it on for a project.</li>
+      <li>Go to Credentials, create an API key, and copy it.</li>
+      <li>Paste it below.</li>
+    </ol>
+    <input id="key-input" type="text" placeholder="AIza…" spellcheck="false" autocomplete="off" aria-label="API key">
+    <label for="region-input">Home feed country</label>
+    <select id="region-input">
+      <option value="SE">Sweden</option>
+      <option value="US">United States</option>
+      <option value="GB">United Kingdom</option>
+      <option value="DE">Germany</option>
+      <option value="NO">Norway</option>
+      <option value="DK">Denmark</option>
+      <option value="FI">Finland</option>
+      <option value="NL">Netherlands</option>
+      <option value="FR">France</option>
+      <option value="ES">Spain</option>
+      <option value="IT">Italy</option>
+      <option value="PL">Poland</option>
+      <option value="BR">Brazil</option>
+      <option value="IN">India</option>
+      <option value="JP">Japan</option>
+      <option value="KR">South Korea</option>
+      <option value="AU">Australia</option>
+      <option value="CA">Canada</option>
+    </select>
+    <div class="err" id="gate-err"></div>
+    <div class="panelrow">
+      <button class="btn-ghost hidden" id="gate-clear">Remove key</button>
+      <button class="btn-ghost hidden" id="gate-cancel">Cancel</button>
+      <button class="btn-primary" id="gate-save">Save key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var API = "https://www.googleapis.com/youtube/v3/";
+  var LS_KEY = "yt.apiKey", LS_REGION = "yt.region";
+
+  var state = {
+    key: "",
+    region: "SE",
+    mode: "home",      // home | search
+    query: "",
+    category: "0",
+    pageToken: null,
+    loading: false,
+    video: null
+  };
+
+  var channelCache = new Map();
+
+  /* ---------------- tiny helpers ---------------- */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls) { var n = document.createElement(tag); if (cls) n.className = cls; return n; }
+  function show(node, yes) { node.classList.toggle("hidden", !yes); }
+  function store(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+  function read(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+
+  function compact(n) {
+    n = Number(n);
+    if (!isFinite(n)) return "";
+    if (n < 1000) return String(n);
+    if (n < 1e6) return trim(n / 1000) + "K";
+    if (n < 1e9) return trim(n / 1e6) + "M";
+    return trim(n / 1e9) + "B";
+  }
+  function trim(x) {
+    var s = x < 10 ? x.toFixed(1) : String(Math.round(x));
+    return s.replace(/\.0$/, "");
+  }
+  function full(n) { return Number(n).toLocaleString(); }
+
+  function ago(iso) {
+    var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    var units = [["year", 31536000], ["month", 2592000], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60]];
+    for (var i = 0; i < units.length; i++) {
+      var v = Math.floor(s / units[i][1]);
+      if (v >= 1) return v + " " + units[i][0] + (v > 1 ? "s" : "") + " ago";
+    }
+    return "just now";
+  }
+
+  function dateLong(iso) {
+    return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  // PT1H2M3S -> 1:02:03
+  function duration(iso) {
+    if (!iso) return "";
+    var m = /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
+    if (!m) return "";
+    var d = +(m[1] || 0), h = +(m[2] || 0), mi = +(m[3] || 0), se = +(m[4] || 0);
+    h += d * 24;
+    var pad = function (x) { return x < 10 ? "0" + x : String(x); };
+    return h ? h + ":" + pad(mi) + ":" + pad(se) : mi + ":" + pad(se);
+  }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ---------------- api ---------------- */
+  function api(resource, params) {
+    var url = new URL(API + resource);
+    Object.keys(params).forEach(function (k) {
+      if (params[k] !== null && params[k] !== undefined && params[k] !== "") url.searchParams.set(k, params[k]);
+    });
+    url.searchParams.set("key", state.key);
+
+    return fetch(url.toString()).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (res.ok) return body;
+        var e = (body.error && body.error.errors && body.error.errors[0]) || {};
+        var err = new Error(friendlyError(e.reason, res.status, body.error && body.error.message));
+        err.reason = e.reason;
+        throw err;
+      });
+    });
+  }
+
+  function friendlyError(reason, status, msg) {
+    switch (reason) {
+      case "quotaExceeded":
+      case "dailyLimitExceeded":
+        return "Daily quota used up. The free allowance is 10,000 units a day and each search costs 100. It resets at midnight Pacific time.";
+      case "keyInvalid":
+      case "badRequest":
+        return "That API key was rejected. Check it for typos, then re-save it.";
+      case "accessNotConfigured":
+        return "YouTube Data API v3 is not enabled on this key's project. Enable it in Google Cloud Console, then wait a minute and retry.";
+      case "ipRefererBlocked":
+        return "This key has application restrictions that block this page. In Cloud Console set the key's restriction to None, or allow your own site.";
+      case "commentsDisabled":
+        return "Comments are turned off for this video.";
+      case "videoNotFound":
+        return "That video is unavailable.";
+      default:
+        return msg || ("Request failed (" + status + ").");
+    }
+  }
+
+  // one channels.list call fills avatars for a whole page of cards
+  function loadChannels(ids) {
+    var missing = ids.filter(function (id) { return id && !channelCache.has(id); });
+    missing = missing.filter(function (id, i) { return missing.indexOf(id) === i; }).slice(0, 50);
+    if (!missing.length) return Promise.resolve();
+    return api("channels", { part: "snippet", id: missing.join(",") })
+      .then(function (d) {
+        (d.items || []).forEach(function (c) {
+          channelCache.set(c.id, (c.snippet.thumbnails.default || {}).url || "");
+        });
+      })
+      .catch(function () {});
+  }
+
+  /* ---------------- cards ---------------- */
+  function thumbOf(sn) {
+    var t = sn.thumbnails || {};
+    return (t.medium || t.high || t.default || {}).url || "";
+  }
+
+  function buildCard(v, small) {
+    var sn = v.snippet;
+    var card = el("button", small ? "sidecard" : "card");
+    card.type = "button";
+
+    var thumb = el("div", "thumb");
+    var img = el("img");
+    img.loading = "lazy";
+    img.alt = "";
+    img.src = thumbOf(sn);
+    thumb.appendChild(img);
+
+    var d = duration(v.contentDetails && v.contentDetails.duration);
+    if (d) { var dur = el("span", "dur"); dur.textContent = d; thumb.appendChild(dur); }
+
+    var meta = el("div", small ? "cardtext" : "cardmeta");
+    var text = small ? meta : el("div", "cardtext");
+
+    if (!small) {
+      var av = el("img", "avatar");
+      av.loading = "lazy"; av.alt = ""; av.width = 36; av.height = 36;
+      av.src = channelCache.get(sn.channelId) || "";
+      meta.appendChild(av);
+      meta.appendChild(text);
+    }
+
+    var h = el("h3", "cardtitle");
+    h.textContent = sn.title;
+    text.appendChild(h);
+
+    var ch = el("p", "cardsub channel");
+    ch.textContent = sn.channelTitle;
+    text.appendChild(ch);
+
+    var stats = el("p", "cardsub");
+    var views = v.statistics && v.statistics.viewCount;
+    stats.textContent = (views ? compact(views) + " views  •  " : "") + ago(sn.publishedAt);
+    text.appendChild(stats);
+
+    card.appendChild(thumb);
+    card.appendChild(meta);
+
+    card.addEventListener("click", function () { openVideo(v.id); });
+    return card;
+  }
+
+  /* ---------------- browse ---------------- */
+  var CATEGORIES = [
+    { id: "0", label: "All" },
+    { id: "10", label: "Music" },
+    { id: "20", label: "Gaming" },
+    { id: "17", label: "Sports" },
+    { id: "25", label: "News" },
+    { id: "28", label: "Science & tech" },
+    { id: "24", label: "Entertainment" },
+    { id: "23", label: "Comedy" },
+    { id: "26", label: "How-to" },
+    { id: "22", label: "People & blogs" }
+  ];
+
+  function renderChips() {
+    var wrap = $("chips");
+    wrap.textContent = "";
+    CATEGORIES.forEach(function (c) {
+      var b = el("button", "chip");
+      b.type = "button";
+      b.textContent = c.label;
+      b.setAttribute("aria-pressed", String(state.category === c.id));
+      b.addEventListener("click", function () {
+        state.category = c.id;
+        goHome();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function status(node, kind, text, actionLabel, action) {
+    node.textContent = "";
+    var box = el("div", "center");
+    if (kind === "loading") {
+      box.appendChild(el("div", "spinner"));
+    } else {
+      var p = el("p");
+      p.textContent = text;
+      p.style.maxWidth = "440px";
+      box.appendChild(p);
+      if (action) {
+        var b = el("button", "pill");
+        b.style.marginTop = "16px";
+        b.textContent = actionLabel;
+        b.addEventListener("click", action);
+        box.appendChild(b);
+      }
+    }
+    node.appendChild(box);
+  }
+
+  function goHome() {
+    state.mode = "home";
+    state.query = "";
+    state.pageToken = null;
+    $("q").value = "";
+    show($("chips"), true);
+    show($("results-for"), false);
+    $("grid").textContent = "";
+    showView("browse");
+    renderChips();
+    loadBrowse(true);
+  }
+
+  function doSearch(q) {
+    state.mode = "search";
+    state.query = q;
+    state.pageToken = null;
+    show($("chips"), false);
+    var head = $("results-for");
+    head.textContent = "";
+    head.appendChild(document.createTextNode("Results for "));
+    var b = el("b");
+    b.textContent = q;
+    head.appendChild(b);
+    show(head, true);
+    $("grid").textContent = "";
+    showView("browse");
+    loadBrowse(true);
+  }
+
+  function loadBrowse(fresh) {
+    if (state.loading) return;
+    state.loading = true;
+    show($("load-more"), false);
+    if (fresh) status($("browse-status"), "loading");
+    else $("load-more").textContent = "Loading…";
+
+    var req;
+    if (state.mode === "search") {
+      req = api("search", {
+        part: "snippet",
+        q: state.query,
+        type: "video",
+        maxResults: 24,
+        pageToken: state.pageToken,
+        regionCode: state.region,
+        safeSearch: "moderate"
+      }).then(function (d) {
+        var ids = (d.items || []).map(function (i) { return i.id.videoId; }).filter(Boolean);
+        if (!ids.length) return { items: [], nextPageToken: null };
+        return api("videos", { part: "snippet,statistics,contentDetails", id: ids.join(",") })
+          .then(function (v) { return { items: v.items || [], nextPageToken: d.nextPageToken }; });
+      });
+    } else {
+      req = api("videos", {
+        part: "snippet,statistics,contentDetails",
+        chart: "mostPopular",
+        regionCode: state.region,
+        videoCategoryId: state.category === "0" ? "" : state.category,
+        maxResults: 24,
+        pageToken: state.pageToken
+      }).then(function (d) { return { items: d.items || [], nextPageToken: d.nextPageToken }; });
+    }
+
+    req.then(function (page) {
+      return loadChannels(page.items.map(function (v) { return v.snippet.channelId; })).then(function () { return page; });
+    })
+    .then(function (page) {
+      $("browse-status").textContent = "";
+      var grid = $("grid");
+      if (!page.items.length && fresh) {
+        status($("browse-status"), "empty", state.mode === "search"
+          ? "No videos matched that search. Try different words."
+          : "Nothing to show for this country and category.");
+        return;
+      }
+      page.items.forEach(function (v) { grid.appendChild(buildCard(v, false)); });
+      state.pageToken = page.nextPageToken || null;
+      $("load-more").textContent = "Show more";
+      show($("load-more"), !!state.pageToken);
+    })
+    .catch(function (err) {
+      $("browse-status").textContent = "";
+      var needsKey = err.reason === "keyInvalid" || err.reason === "accessNotConfigured" || err.reason === "ipRefererBlocked";
+      status($("browse-status"), "error", err.message, needsKey ? "Edit API key" : "Try again",
+        needsKey ? function () { openGate(false); } : function () { loadBrowse(fresh); });
+    })
+    .then(function () { state.loading = false; });
+  }
+
+  /* ---------------- watch ---------------- */
+  function showView(name) {
+    show($("view-browse"), name === "browse");
+    show($("view-watch"), name === "watch");
+  }
+
+  function openVideo(id) {
+    if (!id) return;
+    showView("watch");
+    window.scrollTo(0, 0);
+
+    $("player").textContent = "";
+    var frame = el("iframe");
+    frame.id = "yt-frame";
+    var src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1&modestbranding=1&rel=0&fs=1&enablejsapi=1";
+    if (location.protocol === "http:" || location.protocol === "https:") {
+      src += "&origin=" + encodeURIComponent(location.origin);
+    }
+    frame.src = src;
+    frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
+    frame.allowFullscreen = true;
+    frame.title = "Video player";
+    $("player").appendChild(frame);
+
+    $("v-title").textContent = "Loading…";
+    $("v-channel").textContent = "";
+    $("v-subs").textContent = "";
+    $("v-stats").textContent = "";
+    $("v-desc").textContent = "";
+    $("v-likes").textContent = "";
+    $("v-avatar").removeAttribute("src");
+    $("comments").textContent = "";
+    $("related").textContent = "";
+    $("desc").classList.add("collapsed");
+    $("desc-toggle").textContent = "Show more";
+
+    $("v-open").href = "https://www.youtube.com/watch?v=" + id;
+
+    api("videos", { part: "snippet,statistics,contentDetails", id: id })
+      .then(function (d) {
+        var v = (d.items || [])[0];
+        if (!v) throw new Error("That video is unavailable.");
+        state.video = v;
+        renderVideo(v);
+        loadComments(id);
+        return loadChannel(v.snippet.channelId);
+      })
+      .catch(function (err) {
+        $("v-title").textContent = err.message;
+      });
+  }
+
+  function renderVideo(v) {
+    var sn = v.snippet, st = v.statistics || {};
+    document.title = sn.title + " - YouTube";
+    $("v-title").textContent = sn.title;
+    $("v-channel").textContent = sn.channelTitle;
+    $("v-likes").textContent = (st.likeCount ? compact(st.likeCount) : "—") + " likes";
+    $("v-stats").textContent = (st.viewCount ? full(st.viewCount) + " views" : "Views hidden") + "  •  " + dateLong(sn.publishedAt);
+    $("v-desc").innerHTML = linkify(sn.description || "No description.");
+
+    // description needs the toggle only when it actually overflows
+    var desc = $("desc");
+    requestAnimationFrame(function () {
+      var t = $("v-desc");
+      show($("desc-toggle"), t.scrollHeight > t.clientHeight + 4);
+    });
+    desc.onclick = function (e) {
+      if (desc.classList.contains("collapsed") && e.target.tagName !== "A" && !e.target.classList.contains("ts")) toggleDesc();
+    };
+  }
+
+  function toggleDesc() {
+    var desc = $("desc");
+    var collapsed = desc.classList.toggle("collapsed");
+    $("desc-toggle").textContent = collapsed ? "Show more" : "Show less";
+  }
+
+  // turn urls into links and 1:23 into seek buttons
+  function linkify(text) {
+    var out = escapeHTML(text);
+    out = out.replace(/(https?:\/\/[^\s<]+[^\s<.,:;"')\]])/g, function (u) {
+      return '<a href="' + u + '" target="_blank" rel="noopener nofollow">' + u + "</a>";
+    });
+    out = out.replace(/(^|[\s(\[])((?:\d{1,2}:)?\d{1,2}:\d{2})(?=$|[\s)\].,])/gm, function (_, pre, ts) {
+      var p = ts.split(":").map(Number);
+      var sec = p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1];
+      return pre + '<span class="ts" data-sec="' + sec + '" role="button" tabindex="0">' + ts + "</span>";
+    });
+    return out;
+  }
+
+  function seek(sec) {
+    var f = $("yt-frame");
+    if (!f) return;
+    f.contentWindow.postMessage(JSON.stringify({ event: "command", func: "seekTo", args: [sec, true] }), "*");
+    f.contentWindow.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function loadChannel(channelId) {
+    return api("channels", { part: "snippet,statistics,contentDetails", id: channelId })
+      .then(function (d) {
+        var c = (d.items || [])[0];
+        if (!c) return;
+        $("v-avatar").src = (c.snippet.thumbnails.default || {}).url || "";
+        var subs = c.statistics && c.statistics.subscriberCount;
+        $("v-subs").textContent = subs ? compact(subs) + " subscribers" : "";
+        var uploads = c.contentDetails && c.contentDetails.relatedPlaylists && c.contentDetails.relatedPlaylists.uploads;
+        if (uploads) loadMoreFromChannel(uploads);
+      })
+      .catch(function () {});
+  }
+
+  // uploads playlist costs 1 unit; search.list would cost 100
+  function loadMoreFromChannel(playlistId) {
+    var box = $("related");
+    status(box, "loading");
+    api("playlistItems", { part: "snippet", playlistId: playlistId, maxResults: 16 })
+      .then(function (d) {
+        var ids = (d.items || [])
+          .map(function (i) { return i.snippet.resourceId && i.snippet.resourceId.videoId; })
+          .filter(function (id) { return id && (!state.video || id !== state.video.id); });
+        if (!ids.length) { box.textContent = ""; return; }
+        return api("videos", { part: "snippet,statistics,contentDetails", id: ids.slice(0, 12).join(",") })
+          .then(function (v) {
+            box.textContent = "";
+            var h = el("h2", "sec");
+            h.style.marginTop = "0";
+            h.textContent = "More from this channel";
+            box.appendChild(h);
+            (v.items || []).forEach(function (item) { box.appendChild(buildCard(item, true)); });
+          });
+      })
+      .catch(function () { box.textContent = ""; });
+  }
+
+  function loadComments(videoId) {
+    var box = $("comments");
+    status(box, "loading");
+    api("commentThreads", { part: "snippet", videoId: videoId, maxResults: 20, order: "relevance", textFormat: "plainText" })
+      .then(function (d) {
+        box.textContent = "";
+        var items = d.items || [];
+        $("comments-head").textContent = "Comments";
+        if (!items.length) { status(box, "empty", "No comments yet."); return; }
+        items.forEach(function (t) {
+          var c = t.snippet.topLevelComment.snippet;
+          var row = el("div", "comment");
+          var img = el("img");
+          img.loading = "lazy"; img.alt = ""; img.src = c.authorProfileImageUrl;
+          var body = el("div");
+
+          var author = el("p", "cauthor");
+          author.textContent = c.authorDisplayName;
+          var t2 = el("time");
+          t2.textContent = ago(c.publishedAt);
+          author.appendChild(t2);
+
+          var txt = el("p", "ctext");
+          txt.textContent = c.textDisplay;
+
+          var likes = el("div", "clikes");
+          likes.textContent = c.likeCount ? compact(c.likeCount) + " likes" : "";
+
+          body.appendChild(author); body.appendChild(txt); body.appendChild(likes);
+          row.appendChild(img); row.appendChild(body);
+          box.appendChild(row);
+        });
+      })
+      .catch(function (err) {
+        status(box, "empty", err.reason === "commentsDisabled" || err.reason === "forbidden"
+          ? "Comments are turned off for this video."
+          : err.message);
+      });
+  }
+
+  /* ---------------- key dialog ---------------- */
+  function openGate(firstRun) {
+    $("key-input").value = state.key;
+    $("region-input").value = state.region;
+    $("gate-err").textContent = "";
+    show($("gate-cancel"), !firstRun && !!state.key);
+    show($("gate-clear"), !!state.key);
+    show($("gate"), true);
+    $("key-input").focus();
+  }
+
+  function closeGate() { show($("gate"), false); }
+
+  function saveKey() {
+    var k = $("key-input").value.trim();
+    if (!k) { $("gate-err").textContent = "Paste a key first."; return; }
+    var region = $("region-input").value;
+    var btn = $("gate-save");
+    btn.disabled = true;
+    btn.textContent = "Checking…";
+    $("gate-err").textContent = "";
+
+    var prev = state.key;
+    state.key = k;
+    // cheapest possible validation call
+    api("videos", { part: "id", chart: "mostPopular", regionCode: region, maxResults: 1 })
+      .then(function () {
+        state.region = region;
+        store(LS_KEY, k);
+        store(LS_REGION, region);
+        channelCache.clear();
+        closeGate();
+        goHome();
+      })
+      .catch(function (err) {
+        state.key = prev;
+        $("gate-err").textContent = err.message;
+      })
+      .then(function () {
+        btn.disabled = false;
+        btn.textContent = "Save key";
+      });
+  }
+
+  /* ---------------- wiring ---------------- */
+  $("search-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var q = $("q").value.trim();
+    if (q) doSearch(q);
+  });
+  $("home-btn").addEventListener("click", goHome);
+  $("settings-btn").addEventListener("click", function () { openGate(false); });
+  $("load-more").addEventListener("click", function () { loadBrowse(false); });
+  $("desc-toggle").addEventListener("click", function (e) { e.stopPropagation(); toggleDesc(); });
+  $("gate-save").addEventListener("click", saveKey);
+  $("gate-cancel").addEventListener("click", closeGate);
+  $("gate-clear").addEventListener("click", function () {
+    store(LS_KEY, null);
+    state.key = "";
+    $("key-input").value = "";
+    $("gate-err").textContent = "Key removed.";
+    show($("gate-clear"), false);
+    show($("gate-cancel"), false);
+  });
+  $("key-input").addEventListener("keydown", function (e) { if (e.key === "Enter") saveKey(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !$("gate").classList.contains("hidden") && state.key) closeGate();
+  });
+  document.addEventListener("click", function (e) {
+    if (e.target.classList && e.target.classList.contains("ts")) seek(+e.target.dataset.sec);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ts")) seek(+e.target.dataset.sec);
+  });
+
+  /* ---------------- boot ---------------- */
+  if (location.protocol === "file:") show($("file-warning"), true);
+  $("banner-close").addEventListener("click", function () { show($("file-warning"), false); });
+
+  state.key = read(LS_KEY);
+  state.region = read(LS_REGION) || "SE";
+  renderChips();
+  if (state.key) goHome();
+  else openGate(true);
+})();
+</script>
+</body>
+</html>
