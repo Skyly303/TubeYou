@@ -16,19 +16,39 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  html,body{
-    cursor:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='26'%20height='26'%20viewBox='0%200%2026%2026'%3E%3Cpath%20d='M3%202%20L3%2019%20L8%2015%20L11%2022%20L14.5%2020.5%20L11.5%2013.5%20L18%2013.5%20Z'%20fill='%23ff0000'%20stroke='%23ffffff'%20stroke-width='1.5'%20stroke-linejoin='round'%20stroke-linecap='round'/%3E%3C/svg%3E") 3 2, auto;
-  }
-  a, button, select, .card, .sidecard, .chip, .pill, .avatar,
-  .cardsub.channel, .logo, .iconbtn, .loadmore, .desctoggle, .ts,
-  .channelback, .owner, .banner button{
-    cursor:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='30'%20height='30'%20viewBox='0%200%2030%2030'%3E%3Ccircle%20cx='15'%20cy='15'%20r='13'%20fill='%23ff0000'%20stroke='%23ffffff'%20stroke-width='2'/%3E%3Cpath%20d='M12%209.5%20L21%2015%20L12%2020.5%20Z'%20fill='%23ffffff'/%3E%3C/svg%3E") 15 15, pointer;
-  }
-  input, textarea{cursor:text}
+  html,body{ cursor:none !important; }
+  *{ cursor:none !important; }
+  input, textarea{cursor:text !important}
   @media (hover:none), (pointer:coarse){
-    html, body, a, button, select, .card, .sidecard, .chip, .pill, .avatar,
-    .cardsub.channel, .logo, .iconbtn, .loadmore, .desctoggle, .ts,
-    .channelback, .owner, .banner button{ cursor:auto !important; }
+    *{ cursor:auto !important; }
+    input, textarea{cursor:text !important}
+  }
+
+  /* ---------- custom smooth cursor ---------- */
+  #custom-cursor{
+    position:fixed;top:0;left:0;width:0;height:0;pointer-events:none;
+    z-index:9999;opacity:0;transition:opacity .15s ease;
+  }
+  #custom-cursor.ready{opacity:1}
+  #custom-cursor .cc-ring{
+    position:absolute;top:0;left:0;width:22px;height:22px;margin:-11px 0 0 -11px;
+    border-radius:50%;border:2px solid #8a0000;box-sizing:border-box;
+    transform:scale(1);
+    transition:transform .28s cubic-bezier(.16,1,.3,1), border-color .2s ease, opacity .2s ease;
+    will-change:transform;
+  }
+  #custom-cursor .cc-dot{
+    position:absolute;top:0;left:0;width:6px;height:6px;margin:-3px 0 0 -3px;
+    border-radius:50%;background:#d8d8d8;
+    transition:transform .28s cubic-bezier(.16,1,.3,1);
+    will-change:transform;
+  }
+  #custom-cursor.hover .cc-ring{transform:scale(2.05)}
+  #custom-cursor.hover .cc-dot{transform:scale(1.3)}
+  #custom-cursor.down .cc-ring{transform:scale(.82)}
+  @media (hover:none), (pointer:coarse){ #custom-cursor{display:none} }
+  @media (prefers-reduced-motion:reduce){
+    #custom-cursor .cc-ring, #custom-cursor .cc-dot{transition:none}
   }
   body{
     background:var(--bg); color:var(--text);
@@ -50,7 +70,11 @@
     display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);
   }
   .logo{display:flex;align-items:center;gap:5px;background:none;border:0;padding:0;flex:0 0 auto}
-  .logo svg{height:20px;width:auto}
+  .logo svg{height:20px;width:auto;transform-origin:50% 50%;animation:logo-spin 5s linear infinite}
+  .logo:hover svg{animation-duration:.6s}
+  .logo:active svg{animation-duration:.3s}
+  @keyframes logo-spin{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @media (prefers-reduced-motion:reduce){ .logo svg{animation:none} }
   .logo span{font-weight:700;font-size:20px;letter-spacing:-1.2px}
   .searchwrap{flex:1 1 auto;display:flex;justify-content:center;min-width:0}
   form.search{display:flex;width:100%;max-width:640px}
@@ -208,6 +232,8 @@
 </style>
 </head>
 <body>
+
+<div id="custom-cursor" aria-hidden="true"><div class="cc-ring"></div><div class="cc-dot"></div></div>
 
 <header>
   <button class="logo" id="home-btn" title="TubeYou Home">
@@ -1008,6 +1034,31 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target.classList && e.target.classList.contains("ts")) seek(+e.target.dataset.sec);
   });
+
+  /* ---------------- custom cursor ---------------- */
+  (function initCursor() {
+    var coarse = window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    var cursor = $("custom-cursor");
+    if (coarse || !cursor) return;
+
+    var HOVER_SELECTOR = "a, button, select, .card, .sidecard, .chip, .pill, .avatar, " +
+      ".cardsub.channel, .logo, .iconbtn, .loadmore, .desctoggle, .ts, .channelback, .owner, .banner button";
+
+    window.addEventListener("mousemove", function (e) {
+      cursor.classList.add("ready");
+      cursor.style.transform = "translate3d(" + e.clientX + "px," + e.clientY + "px,0)";
+    }, { passive: true });
+
+    document.addEventListener("mouseover", function (e) {
+      if (e.target.closest && e.target.closest(HOVER_SELECTOR)) cursor.classList.add("hover");
+    }, true);
+    document.addEventListener("mouseout", function (e) {
+      if (e.target.closest && e.target.closest(HOVER_SELECTOR)) cursor.classList.remove("hover");
+    }, true);
+    document.addEventListener("mousedown", function () { cursor.classList.add("down"); });
+    document.addEventListener("mouseup", function () { cursor.classList.remove("down"); });
+    document.addEventListener("mouseleave", function () { cursor.classList.remove("ready"); });
+  })();
 
   /* ---------------- boot ---------------- */
   if (location.protocol === "file:") show($("file-warning"), true);
