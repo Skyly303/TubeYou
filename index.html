@@ -170,11 +170,12 @@ function getJson(u){var ac=new AbortController(),t=setTimeout(function(){ac.abor
   return fetch(u,{signal:ac.signal}).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("HTTP "+r.status);return r.json()},function(e){clearTimeout(t);throw e})}
 function ask(pp,ip,f){
   var tr=PIPED.map(function(h){return{h:h,u:h+pp}}).concat(INV.map(function(h){return{h:h,u:h+ip}})),won=false;
-  return Promise.any(tr.map(function(t){return getJson(t.u).then(function(j){var r=f(j);if(!r||(Array.isArray(r)&&!r.length))throw new Error("empty");if(!won){won=true;SRC=t.h.split("//")[1]}return r})}))}
+  return Promise.any(tr.map(function(t,i){return new Promise(function(r){setTimeout(r,i*1200)}).then(function(){return getJson(t.u)}).then(function(j){var r=f(j);if(!r||(Array.isArray(r)&&!r.length))throw new Error("empty");if(!won){won=true;SRC=t.h.split("//")[1]}return r})}))}
 function nv(x){var m=x.url&&/v=([\w-]{11})/.exec(x.url),id=x.videoId||(m&&m[1]);if(!id)return null;
   var cm=x.uploaderUrl&&/channel\/([\w-]+)/.exec(x.uploaderUrl),at=x.authorThumbnails;
   return{id:id,title:x.title||id,author:x.author||x.uploaderName||"",cid:x.authorId||(cm&&cm[1])||"",
     av:fixu(x.uploaderAvatar||(at&&at[0]&&at[0].url)),views:x.viewCount!=null?x.viewCount:x.views,dur:x.lengthSeconds!=null?x.lengthSeconds:x.duration,when:x.publishedText||x.uploadedDate||""}}
+function trendN(j){return listN(j).filter(function(v){return !v.dur||v.dur>=70})}
 function listN(j){return(Array.isArray(j)?j:(j.items||[])).map(nv).filter(Boolean)}
 function detN(j){if(!j.title)return null;var cm=j.uploaderUrl&&/channel\/([\w-]+)/.exec(j.uploaderUrl),at=j.authorThumbnails;
   return{desc:plain(j.description),likes:j.likes!=null?j.likes:j.likeCount,views:j.views!=null?j.views:j.viewCount,when:j.uploadDate||j.publishedText||"",
@@ -189,7 +190,7 @@ function status(n,kind,text,lab,act){n.textContent="";var b=el("div","center");
   if(kind==="loading")b.appendChild(el("div","spinner"));else{var p=el("p",null,text);p.style.maxWidth="440px";p.style.whiteSpace="pre-wrap";b.appendChild(p);
     if(act){var x=el("button","pill",lab);x.style.marginTop="16px";x.onclick=act;b.appendChild(x)}}n.appendChild(b)}
 function aerr(e){return"Could not load from any service right now. They may be down or blocking requests."+(e&&e.errors?"\n("+e.errors.map(function(x){return x.message}).join(", ")+")":"")}
-function avatarEl(cls,img,name){var a=el(cls);if(img){var i=el("img");i.alt="";i.loading="lazy";i.src=img;i.onerror=function(){a.textContent=letter(name);i.remove()};a.appendChild(i)}else a.textContent=letter(name);return a}
+function avatarEl(cls,img,name){var a=el("div",cls);if(img){var i=el("img");i.alt="";i.loading="lazy";i.src=img;i.onerror=function(){a.textContent=letter(name);i.remove()};a.appendChild(i)}else a.textContent=letter(name);return a}
 function card(v,small){
   var c=el("button",small?"sidecard":"card");c.type="button";
   var th=el("div","thumb"),im=el("img");im.loading="lazy";im.alt="";im.src="https://i.ytimg.com/vi/"+v.id+"/mqdefault.jpg";th.appendChild(im);
@@ -211,7 +212,7 @@ function renderChips(){var w=$("chips");w.textContent="";CATS.forEach(function(c
 function goHome(){$("q").value="";vis($("chips"),true);vis($("rf"),false);showView("browse");renderChips();document.title="TubeYou";
   var q=CATS[S.cat][1],g=$("grid"),st=$("bst");
   if(q){var e=encodeURIComponent(q);fill(g,st,ask("/search?q="+e+"&filter=videos","/api/v1/search?q="+e+"&type=video",listN),goHome)}
-  else fill(g,st,ask("/trending?region="+S.region,"/api/v1/trending?region="+S.region,listN),goHome)}
+  else fill(g,st,ask("/trending?region="+S.region,"/api/v1/trending?region="+S.region,trendN),goHome)}
 function doSearch(q){
   var m=/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([\w-]{11})/.exec(q)||/^([\w-]{11})$/.exec(q);
   if(m){openVideo({id:m[1],title:"Video",author:"",cid:""});return}
